@@ -57,29 +57,29 @@ textarea.form-input{resize:vertical;min-height:120px}
 <footer class="footer"><p>© 2026 — Scrape Request. All rights reserved.</p></footer></div>
 <script>
 (async function(){
-let C='';
-const i=document.querySelectorAll('.captcha-input-box');const ct=document.getElementById('captchaText');
-async function l(){try{const r=await fetch('/api/captcha');if(r.ok){const d=await r.json();C=d.captcha;ct.textContent=C;c();}else{ct.textContent='Error';}}catch(e){ct.textContent='Error';console.error(e);}}
-function c(){i.forEach(e=>{e.value='';e.classList.remove('filled')});i[0].focus()}
-await l();
-document.getElementById('refreshCaptcha').addEventListener('click',l);
-i.forEach((e,idx)=>{e.addEventListener('input',ev=>{const v=ev.target.value;if(v.length>1)ev.target.value=v.charAt(0);ev.target.value?ev.target.classList.add('filled'):ev.target.classList.remove('filled');if(v&&idx<i.length-1)i[idx+1].focus()});
-e.addEventListener('keydown',ev=>{if(ev.key==='Backspace'&&!ev.target.value&&idx>0)i[idx-1].focus()});
-e.addEventListener('paste',ev=>{ev.preventDefault();const p=ev.clipboardData.getData('text').trim();if(p.length===4){for(let j=0;j<4;j++){if(j<p.length){i[j].value=p[j];i[j].classList.add('filled')}}i[3].focus()}});});
-function gv(){let v='';i.forEach(e=>{v+=e.value});return v}
-function sm(t,ty){const m=document.getElementById('message');m.textContent=t;m.className=`message ${ty}`;m.style.display='block';setTimeout(()=>{m.style.display='none'},5000);}
-document.getElementById('scrapeForm').addEventListener('submit',async e=>{e.preventDefault();const n=document.getElementById('name').value.trim();const u=document.getElementById('url').value.trim();const d=document.getElementById('description').value.trim();const cv=gv();
-if(!n||!u||!d){sm('Please fill all required fields.','error');return;}
-if(!u.startsWith('https://')){sm('URL must start with https://','error');return;}
-if(cv.length!==4){sm('Enter all 4 verification characters.','error');return;}
-const b=document.getElementById('submitBtn');const t=document.getElementById('btnText');const l=document.getElementById('loadingSpinner');
-b.disabled=true;t.textContent='Sending...';l.style.display='block';
-try{const r=await fetch('/api/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,url:u,description:d,captcha:cv})});
-const j=await r.json();if(r.ok){document.getElementById('scrapeForm').reset();await l();sm('Request submitted successfully.','success');}else{sm(j.error||'Submission failed.','error');await l();}}catch(err){sm('Network error. Try again.','error');await l();}finally{b.disabled=false;t.textContent='Submit Request';l.style.display='none';}});
-setInterval(l,180000);
+let currentCaptcha='';
+const captchaInputs=document.querySelectorAll('.captcha-input-box');const captchaText=document.getElementById('captchaText');
+async function loadCaptcha(){try{const response=await fetch('/api/captcha');if(response.ok){const data=await response.json();currentCaptcha=data.captcha;captchaText.textContent=currentCaptcha;clearCaptchaInputs();}else{captchaText.textContent='Error';}}catch(error){captchaText.textContent='Error';console.error('Failed to load CAPTCHA:',error);}}
+function clearCaptchaInputs(){captchaInputs.forEach(input=>{input.value='';input.classList.remove('filled');});if(captchaInputs[0])captchaInputs[0].focus();}
+await loadCaptcha();
+document.getElementById('refreshCaptcha').addEventListener('click',loadCaptcha);
+captchaInputs.forEach((input,index)=>{input.addEventListener('input',function(e){const value=e.target.value;if(value.length>1)e.target.value=value.charAt(0);if(e.target.value){e.target.classList.add('filled');}else{e.target.classList.remove('filled');}if(value&&index<captchaInputs.length-1){captchaInputs[index+1].focus();}});
+input.addEventListener('keydown',function(e){if(e.key==='Backspace'&&!e.target.value&&index>0){captchaInputs[index-1].focus();}});
+input.addEventListener('paste',function(e){e.preventDefault();const pasted=e.clipboardData.getData('text').trim();if(pasted.length===4){for(let i=0;i<4;i++){if(i<pasted.length){captchaInputs[i].value=pasted[i];captchaInputs[i].classList.add('filled');}}captchaInputs[3].focus();}});});
+function getCaptchaValue(){let value='';captchaInputs.forEach(input=>{value+=input.value;});return value;}
+function showMessage(text,type){const messageDiv=document.getElementById('message');messageDiv.textContent=text;messageDiv.className=`message ${type}`;messageDiv.style.display='block';setTimeout(()=>{messageDiv.style.display='none';},5000);}
+document.getElementById('scrapeForm').addEventListener('submit',async function(e){e.preventDefault();const name=document.getElementById('name').value.trim();const url=document.getElementById('url').value.trim();const description=document.getElementById('description').value.trim();const captchaValue=getCaptchaValue();
+if(!name||!url||!description){showMessage('Please fill all required fields.','error');return;}
+if(!url.startsWith('https://')){showMessage('URL must start with https://','error');return;}
+if(captchaValue.length!==4){showMessage('Enter all 4 verification characters.','error');return;}
+const submitBtn=document.getElementById('submitBtn');const btnText=document.getElementById('btnText');const loadingSpinner=document.getElementById('loadingSpinner');
+submitBtn.disabled=true;btnText.textContent='Sending...';loadingSpinner.style.display='block';
+try{const response=await fetch('/api/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,url:url,description:description,captcha:captchaValue})});
+const result=await response.json();if(response.ok){document.getElementById('scrapeForm').reset();await loadCaptcha();showMessage('Request submitted successfully.','success');}else{showMessage(result.error||'Submission failed.','error');await loadCaptcha();}}catch(error){showMessage('Network error. Please try again.','error');await loadCaptcha();}finally{submitBtn.disabled=false;btnText.textContent='Submit Request';loadingSpinner.style.display='none';}});
+setInterval(loadCaptcha,180000);
 document.addEventListener('DOMContentLoaded',()=>{document.getElementById('name').focus();});
-function dt(){const dm=window.matchMedia('(prefers-color-scheme: dark)').matches;if(!dm){document.documentElement.style.setProperty('--bg-primary','#fff');document.documentElement.style.setProperty('--bg-secondary','#f9f9f9');document.documentElement.style.setProperty('--bg-tertiary','#f0f0f0');document.documentElement.style.setProperty('--text-primary','#000');document.documentElement.style.setProperty('--text-secondary','#666');document.documentElement.style.setProperty('--border','#e0e0e0');document.documentElement.style.setProperty('--accent','#000');document.documentElement.style.setProperty('--accent-hover','#333');}}
-dt();window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',dt);
+function detectTheme(){const isDark=window.matchMedia('(prefers-color-scheme: dark)').matches;if(!isDark){document.documentElement.style.setProperty('--bg-primary','#fff');document.documentElement.style.setProperty('--bg-secondary','#f9f9f9');document.documentElement.style.setProperty('--bg-tertiary','#f0f0f0');document.documentElement.style.setProperty('--text-primary','#000');document.documentElement.style.setProperty('--text-secondary','#666');document.documentElement.style.setProperty('--border','#e0e0e0');document.documentElement.style.setProperty('--accent','#000');document.documentElement.style.setProperty('--accent-hover','#333');}}
+detectTheme();window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',detectTheme);
 })();
 </script>
 </body></html>
