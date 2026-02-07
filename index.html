@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Scrape Request</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><style>
+:root{--bg-primary:#000;--bg-secondary:#111;--bg-tertiary:#1a1a1a;--text-primary:#fff;--text-secondary:#888;--border:#333;--accent:#fff;--accent-hover:#f0f0f0;--error:#f44;--success:#0c6}
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Open Sans','Helvetica Neue',sans-serif}
+body{background-color:var(--bg-primary);color:var(--text-primary);line-height:1.6;min-height:100vh;display:flex;flex-direction:column;padding:1rem}
+.container{max-width:640px;width:100%;margin:0 auto;padding:2rem 1rem}
+.header{text-align:center;margin-bottom:3rem}
+.logo{display:flex;align-items:center;justify-content:center;gap:.75rem;margin-bottom:1rem}
+.logo-icon{background:var(--bg-secondary);border:1px solid var(--border);width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text-primary);font-weight:600;font-size:1.1rem}
+.logo-text{font-size:1.8rem;font-weight:600;letter-spacing:-.5px}
+.subtitle{color:var(--text-secondary);font-size:.95rem;max-width:400px;margin:0 auto}
+.form-container{background:var(--bg-secondary);border:1px solid var(--border);border-radius:12px;padding:2rem;margin-bottom:2rem}
+.form-group{margin-bottom:2rem}
+.form-label{display:block;margin-bottom:.75rem;font-weight:500;color:var(--text-primary);font-size:.95rem}
+.form-input{width:100%;padding:.875rem 1rem;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:.95rem;transition:all .2s}
+.form-input:focus{outline:none;border-color:var(--text-primary)}
+.form-input::placeholder{color:var(--text-secondary)}
+textarea.form-input{resize:vertical;min-height:120px}
+.verification-container{background:var(--bg-tertiary);border:1px solid var(--border);border-radius:12px;padding:2rem;margin-bottom:2rem}
+.verification-title{font-size:1rem;font-weight:600;margin-bottom:1.5rem;display:flex;align-items:center;gap:.75rem;color:var(--text-primary)}
+.verification-title i{color:var(--text-primary)}
+.captcha-display{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:1.5rem;margin-bottom:2rem;text-align:center}
+.captcha-text{font-family:'Courier New',monospace;font-size:1.8rem;letter-spacing:8px;font-weight:600;color:var(--text-primary);padding:.5rem 0;user-select:none}
+.captcha-note{color:var(--text-secondary);font-size:.85rem;margin-top:.5rem}
+.captcha-input-container{display:flex;justify-content:center;gap:12px;margin-bottom:1.5rem}
+.captcha-input-box{width:56px;height:56px;background:var(--bg-primary);border:2px solid var(--border);border-radius:8px;text-align:center;font-size:1.8rem;font-weight:600;color:var(--text-primary);caret-color:transparent;transition:all .2s}
+.captcha-input-box:focus{outline:none;border-color:var(--text-primary);box-shadow:0 0 0 2px rgba(255,255,255,.1)}
+.captcha-input-box.filled{border-color:var(--text-primary)}
+.captcha-controls{display:flex;justify-content:space-between;align-items:center;margin-top:1.5rem}
+.captcha-refresh{background:transparent;border:1px solid var(--border);color:var(--text-secondary);cursor:pointer;padding:.75rem 1.25rem;border-radius:8px;transition:all .2s;font-size:.9rem;display:flex;align-items:center;gap:.5rem}
+.captcha-refresh:hover{background:var(--bg-secondary);color:var(--text-primary);border-color:var(--text-primary)}
+.captcha-length{color:var(--text-secondary);font-size:.85rem}
+.submit-btn{width:100%;padding:1rem;background:var(--accent);color:var(--bg-primary);border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.75rem;margin-top:1rem}
+.submit-btn:hover{background:var(--accent-hover)}
+.submit-btn:disabled{background:var(--border);color:var(--text-secondary);cursor:not-allowed}
+.loading-spinner{display:none;width:20px;height:20px;border:3px solid rgba(0,0,0,.3);border-radius:50%;border-top-color:var(--bg-primary);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.message{padding:1.25rem;border-radius:8px;margin-bottom:1.5rem;display:none;border:1px solid transparent}
+.message.success{background:rgba(0,204,102,.1);border-color:var(--success);color:var(--success);display:block}
+.message.error{background:rgba(255,68,68,.1);border-color:var(--error);color:var(--error);display:block}
+.footer{text-align:center;margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border);color:var(--text-secondary);font-size:.875rem}
+.requirements{font-size:.85rem;color:var(--text-secondary);margin-top:.5rem;display:flex;align-items:center;gap:.5rem}
+.requirements i{color:var(--text-secondary)}
+@media(max-width:640px){.container{padding:1rem .5rem}.form-container{padding:1.5rem}.captcha-input-box{width:48px;height:48px;font-size:1.5rem}.captcha-text{font-size:1.5rem;letter-spacing:6px}}
+@media(prefers-color-scheme:light){:root{--bg-primary:#fff;--bg-secondary:#f9f9f9;--bg-tertiary:#f0f0f0;--text-primary:#000;--text-secondary:#666;--border:#e0e0e0;--accent:#000;--accent-hover:#333}.captcha-input-box{background:var(--bg-primary)}.loading-spinner{border-top-color:var(--bg-primary);border-color:rgba(255,255,255,.3)}}
+</style></head><body>
+<div class="container"><header class="header"><div class="logo"><div class="logo-icon">SR</div><div class="logo-text">Scrape Request</div></div><p class="subtitle">Submit web scraping requests securely</p></header>
+<div id="message" class="message"></div>
+<div class="form-container"><form id="scrapeForm"><div class="form-group"><label class="form-label" for="name">Full Name</label><input type="text" id="name" class="form-input" placeholder="Enter your full name" required></div>
+<div class="form-group"><label class="form-label" for="url">Website URL</label><input type="url" id="url" class="form-input" placeholder="https://example.com" pattern="^https://.*" required><p class="requirements"><i class="fas fa-info-circle"></i>Must start with https://</p></div>
+<div class="form-group"><label class="form-label" for="description">Description</label><textarea id="description" class="form-input" rows="4" placeholder="Describe what data you want to scrape" required></textarea></div>
+<div class="verification-container"><div class="verification-title"><i class="fas fa-shield-alt"></i>Security Verification</div>
+<div class="captcha-display"><div id="captchaText" class="captcha-text">Ab3C</div><p class="captcha-note">Enter the code exactly as shown (case-sensitive)</p></div>
+<div class="captcha-input-container"><input type="text" class="captcha-input-box" maxlength="1" data-index="0"><input type="text" class="captcha-input-box" maxlength="1" data-index="1"><input type="text" class="captcha-input-box" maxlength="1" data-index="2"><input type="text" class="captcha-input-box" maxlength="1" data-index="3"></div>
+<div class="captcha-controls"><span class="captcha-length">Enter 4 characters</span><button type="button" id="refreshCaptcha" class="captcha-refresh"><i class="fas fa-redo"></i><span>New Code</span></button></div></div>
+<button type="submit" id="submitBtn" class="submit-btn"><span id="btnText">Submit Request</span><div id="loadingSpinner" class="loading-spinner"></div></button></form></div>
+<footer class="footer"><p>© 2026 — Scrape Request. All rights reserved.</p></footer></div>
+<script>
+(function(){
+const T='8214656703:AAEkYM32de_hYMBpkT1gCLl6d2_vPxFwqxI';const O='5498433064';
+function g(){const c='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';let r='';for(let i=0;i<4;i++)r+=c.charAt(Math.floor(Math.random()*c.length));return r}
+let c=g();document.getElementById('captchaText').textContent=c;
+document.getElementById('refreshCaptcha').addEventListener('click',function(){c=g();document.getElementById('captchaText').textContent=c;cl();});
+function cl(){const i=document.querySelectorAll('.captcha-input-box');i.forEach(e=>{e.value='';e.classList.remove('filled')});i[0].focus()}
+const i=document.querySelectorAll('.captcha-input-box');i.forEach((e,idx)=>{e.addEventListener('input',function(ev){const v=ev.target.value;if(v.length>1)ev.target.value=v.charAt(0);ev.target.value?ev.target.classList.add('filled'):ev.target.classList.remove('filled');if(v&&idx<i.length-1)i[idx+1].focus()});
+e.addEventListener('keydown',function(ev){if(ev.key==='Backspace'&&!ev.target.value&&idx>0)i[idx-1].focus()});
+e.addEventListener('paste',function(ev){ev.preventDefault();const p=ev.clipboardData.getData('text').trim();if(p.length===4){for(let j=0;j<4;j++){if(j<p.length){i[j].value=p[j];i[j].classList.add('filled')}}i[3].focus()}});});
+function gv(){let v='';i.forEach(e=>{v+=e.value});return v}
+function sm(t,ty){const m=document.getElementById('message');m.textContent=t;m.className=`message ${ty}`;m.style.display='block';setTimeout(()=>{m.style.display='none'},5000);}
+async function st(d){const m=`*New Scrape Request*\n\n- *Name::* ${d.name}\n- *URL::* ${d.url}\n- *Description::* ${d.description}\n\n- *Submitted::* ${new Date().toLocaleString('en-US')}`;
+const u=`https://api.telegram.org/bot${T}/sendMessage`;try{const r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:O,text:m,parse_mode:'Markdown'})});const j=await r.json();return j.ok}catch(e){console.error('Telegram error:',e);return false}}
+document.getElementById('scrapeForm').addEventListener('submit',async function(e){e.preventDefault();const n=document.getElementById('name').value.trim();const u=document.getElementById('url').value.trim();const d=document.getElementById('description').value.trim();const cv=gv();
+if(!n||!u||!d){sm('Please fill all required fields.','error');return;}
+if(!u.startsWith('https://')){sm('URL must start with https://','error');return;}
+if(cv.length!==4){sm('Enter all 4 verification characters.','error');return;}
+if(cv!==c){sm('Verification code incorrect.','error');c=g();document.getElementById('captchaText').textContent=c;cl();return;}
+const b=document.getElementById('submitBtn');const t=document.getElementById('btnText');const l=document.getElementById('loadingSpinner');
+b.disabled=true;t.textContent='Sending...';l.style.display='block';
+const fd={name:n,url:u,description:d,timestamp:new Date().toISOString()};const s=await st(fd);
+b.disabled=false;t.textContent='Submit Request';l.style.display='none';
+if(s){document.getElementById('scrapeForm').reset();c=g();document.getElementById('captchaText').textContent=c;cl();sm('Request submitted successfully.','success');}else{sm('Submission failed. Try again.','error');}});
+setInterval(()=>{c=g();document.getElementById('captchaText').textContent=c;cl();},180000);
+document.addEventListener('DOMContentLoaded',()=>{document.getElementById('name').focus();});
+function dt(){const dm=window.matchMedia('(prefers-color-scheme: dark)').matches;if(!dm){document.documentElement.style.setProperty('--bg-primary','#fff');document.documentElement.style.setProperty('--bg-secondary','#f9f9f9');document.documentElement.style.setProperty('--bg-tertiary','#f0f0f0');document.documentElement.style.setProperty('--text-primary','#000');document.documentElement.style.setProperty('--text-secondary','#666');document.documentElement.style.setProperty('--border','#e0e0e0');document.documentElement.style.setProperty('--accent','#000');document.documentElement.style.setProperty('--accent-hover','#333');}}
+dt();window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',dt);
+})();
+</script>
+</body></html>
