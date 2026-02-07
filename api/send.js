@@ -66,7 +66,7 @@ export default async function handler(req) {
     const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
     const TELEGRAM_CHAT_ID = process.env.TELEGRAM_OWNER_ID;
     
-    const message = `📋 *New Scrape Request*\n\n👤 *Name:* ${name}\n🔗 *URL:* ${url}\n📝 *Description:* ${description}\n\n🕐 *Submitted:* ${new Date().toLocaleString('en-US')}`;
+    const message = `*New Scrape Request*\n\n- *Name:* ${name}\n- *URL:* ${url}\n- *Description:* ${description}\n\n- *Submitted:* ${new Date().toLocaleString('en-US')}`;
     
     const telegramResponse = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
       method: 'POST',
