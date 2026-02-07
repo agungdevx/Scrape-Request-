@@ -119,7 +119,7 @@ function parseCookies(cookieHeader) {
 
 async function hashCaptcha(text) {
   const encoder = new TextEncoder();
-  const secret = process.env.CAPTCHA_SECRET || 'your-secret-key-change-this';
+  const secret = process.env.CAPTCHA_SECRET;
   const data = encoder.encode(text + secret);
   const hash = await crypto.subtle.digest('SHA-256', data);
   return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
