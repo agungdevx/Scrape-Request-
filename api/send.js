@@ -1,4 +1,4 @@
-// /api/send.js
+// /api/send.js - Edge Function
 export const config = {
   runtime: 'edge',
 };
@@ -32,31 +32,43 @@ export default async function handler(req) {
     }
     
     // 3. Validasi CAPTCHA dari cookie
-    const cookieHeader = req.headers.get('cookie');
+    const cookieHeader = req.headers.get('cookie') || '';
     const cookies = parseCookies(cookieHeader);
-    const captchaSession = cookies.captcha_session;
+    const captchaCookie = cookies.captcha;
     
-    if (!captchaSession) {
-      return new Response(JSON.stringify({ error: 'No CAPTCHA session found' }), {
+    if (!captchaCookie) {
+      return new Response(JSON.stringify({ error: 'No CAPTCHA session found. Please refresh the page.' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
     }
     
-    const [storedHash, expiry] = captchaSession.split('|');
-    
-    // Check expiry
-    if (Date.now() > parseInt(expiry)) {
-      return new Response(JSON.stringify({ error: 'CAPTCHA expired' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-    
-    // Verify CAPTCHA
-    const inputHash = await hashCaptcha(captcha);
-    if (inputHash !== storedHash) {
-      return new Response(JSON.stringify({ error: 'Invalid CAPTCHA' }), {
+    try {
+      // Decode dari base64
+      const decodedData = atob(captchaCookie);
+      const [storedCaptcha, expiryStr] = decodedData.split('|');
+      const expiry = parseInt(expiryStr);
+      
+      // Check expiry
+      if (Date.now() > expiry) {
+        return new Response(JSON.stringify({ error: 'CAPTCHA expired. Please get a new code.' }), {
+          status: 400,
+          headers: { 
+            'Content-Type': 'application/json',
+            'Set-Cookie': 'captcha=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0'
+          }
+        });
+      }
+      
+      // Verify CAPTCHA (case-sensitive)
+      if (captcha !== storedCaptcha) {
+        return new Response(JSON.stringify({ error: 'Invalid CAPTCHA code. Please try again.' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    } catch (error) {
+      return new Response(JSON.stringify({ error: 'Invalid CAPTCHA session' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
@@ -66,7 +78,7 @@ export default async function handler(req) {
     const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
     const TELEGRAM_CHAT_ID = process.env.TELEGRAM_OWNER_ID;
     
-    const message = `*New Scrape Request*\n\n- *Name:* ${name}\n- *URL:* ${url}\n- *Description:* ${description}\n\n- *Submitted:* ${new Date().toLocaleString('en-US')}`;
+    const message = `📋 *New Scrape Request*\n\n👤 *Name:* ${name}\n🔗 *URL:* ${url}\n📝 *Description:* ${description}\n\n🕐 *Submitted:* ${new Date().toLocaleString('en-US')}`;
     
     const telegramResponse = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
       method: 'POST',
@@ -82,16 +94,15 @@ export default async function handler(req) {
     
     if (result.ok) {
       // Clear CAPTCHA session setelah sukses
-      const response = new Response(JSON.stringify({ success: true, message: 'Request sent successfully' }), {
+      return new Response(JSON.stringify({ success: true, message: 'Request sent successfully' }), {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
-          'Set-Cookie': 'captcha_session=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0'
+          'Set-Cookie': 'captcha=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0'
         }
       });
-      return response;
     } else {
-      return new Response(JSON.stringify({ error: 'Failed to send to Telegram' }), {
+      return new Response(JSON.stringify({ error: 'Failed to send to Telegram: ' + (result.description || 'Unknown error') }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' }
       });
@@ -111,16 +122,10 @@ function parseCookies(cookieHeader) {
   if (cookieHeader) {
     cookieHeader.split(';').forEach(cookie => {
       const [name, value] = cookie.trim().split('=');
-      cookies[name] = value;
+      if (name && value) {
+        cookies[name] = value;
+      }
     });
   }
   return cookies;
-}
-
-async function hashCaptcha(text) {
-  const encoder = new TextEncoder();
-  const secret = process.env.CAPTCHA_SECRET;
-  const data = encoder.encode(text + secret);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
