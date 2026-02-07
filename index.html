@@ -50,18 +50,20 @@ textarea.form-input{resize:vertical;min-height:120px}
 <div class="form-group"><label class="form-label" for="url">Website URL</label><input type="url" id="url" class="form-input" placeholder="https://example.com" pattern="^https://.*" required><p class="requirements"><i class="fas fa-info-circle"></i>Must start with https://</p></div>
 <div class="form-group"><label class="form-label" for="description">Description</label><textarea id="description" class="form-input" rows="4" placeholder="Describe what data you want to scrape" required></textarea></div>
 <div class="verification-container"><div class="verification-title"><i class="fas fa-shield-alt"></i>Security Verification</div>
-<div class="captcha-display"><div id="captchaText" class="captcha-text">Ab3C</div><p class="captcha-note">Enter the code exactly as shown (case-sensitive)</p></div>
+<div class="captcha-display"><div id="captchaText" class="captcha-text">Loading...</div><p class="captcha-note">Enter the code exactly as shown (case-sensitive)</p></div>
 <div class="captcha-input-container"><input type="text" class="captcha-input-box" maxlength="1" data-index="0"><input type="text" class="captcha-input-box" maxlength="1" data-index="1"><input type="text" class="captcha-input-box" maxlength="1" data-index="2"><input type="text" class="captcha-input-box" maxlength="1" data-index="3"></div>
 <div class="captcha-controls"><span class="captcha-length">Enter 4 characters</span><button type="button" id="refreshCaptcha" class="captcha-refresh"><i class="fas fa-redo"></i><span>New Code</span></button></div></div>
 <button type="submit" id="submitBtn" class="submit-btn"><span id="btnText">Submit Request</span><div id="loadingSpinner" class="loading-spinner"></div></button></form></div>
 <footer class="footer"><p>© 2026 — Scrape Request. All rights reserved.</p></footer></div>
 <script>
-(function(){
-let C=g();document.getElementById('captchaText').textContent=C;
-function g(){const c='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';let r='';for(let i=0;i<4;i++)r+=c.charAt(Math.floor(Math.random()*c.length));return r}
-document.getElementById('refreshCaptcha').addEventListener('click',()=>{C=g();document.getElementById('captchaText').textContent=C;c()});
-function c(){const i=document.querySelectorAll('.captcha-input-box');i.forEach(e=>{e.value='';e.classList.remove('filled')});i[0].focus()}
-const i=document.querySelectorAll('.captcha-input-box');i.forEach((e,idx)=>{e.addEventListener('input',ev=>{const v=ev.target.value;if(v.length>1)ev.target.value=v.charAt(0);ev.target.value?ev.target.classList.add('filled'):ev.target.classList.remove('filled');if(v&&idx<i.length-1)i[idx+1].focus()});
+(async function(){
+let C='';
+const i=document.querySelectorAll('.captcha-input-box');const ct=document.getElementById('captchaText');
+async function l(){try{const r=await fetch('/api/captcha');if(r.ok){const d=await r.json();C=d.captcha;ct.textContent=C;c();}else{ct.textContent='Error';}}catch(e){ct.textContent='Error';console.error(e);}}
+function c(){i.forEach(e=>{e.value='';e.classList.remove('filled')});i[0].focus()}
+await l();
+document.getElementById('refreshCaptcha').addEventListener('click',l);
+i.forEach((e,idx)=>{e.addEventListener('input',ev=>{const v=ev.target.value;if(v.length>1)ev.target.value=v.charAt(0);ev.target.value?ev.target.classList.add('filled'):ev.target.classList.remove('filled');if(v&&idx<i.length-1)i[idx+1].focus()});
 e.addEventListener('keydown',ev=>{if(ev.key==='Backspace'&&!ev.target.value&&idx>0)i[idx-1].focus()});
 e.addEventListener('paste',ev=>{ev.preventDefault();const p=ev.clipboardData.getData('text').trim();if(p.length===4){for(let j=0;j<4;j++){if(j<p.length){i[j].value=p[j];i[j].classList.add('filled')}}i[3].focus()}});});
 function gv(){let v='';i.forEach(e=>{v+=e.value});return v}
@@ -72,9 +74,9 @@ if(!u.startsWith('https://')){sm('URL must start with https://','error');return;
 if(cv.length!==4){sm('Enter all 4 verification characters.','error');return;}
 const b=document.getElementById('submitBtn');const t=document.getElementById('btnText');const l=document.getElementById('loadingSpinner');
 b.disabled=true;t.textContent='Sending...';l.style.display='block';
-try{const r=await fetch('/api/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,url:u,description:d,captcha:cv,captchaCode:C})});
-const j=await r.json();if(r.ok){document.getElementById('scrapeForm').reset();C=g();document.getElementById('captchaText').textContent=C;c();sm('Request submitted successfully.','success');}else{sm(j.error||'Submission failed.','error');C=g();document.getElementById('captchaText').textContent=C;c();}}catch(err){sm('Network error. Try again.','error');}finally{b.disabled=false;t.textContent='Submit Request';l.style.display='none';}});
-setInterval(()=>{C=g();document.getElementById('captchaText').textContent=C;c();},180000);
+try{const r=await fetch('/api/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,url:u,description:d,captcha:cv})});
+const j=await r.json();if(r.ok){document.getElementById('scrapeForm').reset();await l();sm('Request submitted successfully.','success');}else{sm(j.error||'Submission failed.','error');await l();}}catch(err){sm('Network error. Try again.','error');await l();}finally{b.disabled=false;t.textContent='Submit Request';l.style.display='none';}});
+setInterval(l,180000);
 document.addEventListener('DOMContentLoaded',()=>{document.getElementById('name').focus();});
 function dt(){const dm=window.matchMedia('(prefers-color-scheme: dark)').matches;if(!dm){document.documentElement.style.setProperty('--bg-primary','#fff');document.documentElement.style.setProperty('--bg-secondary','#f9f9f9');document.documentElement.style.setProperty('--bg-tertiary','#f0f0f0');document.documentElement.style.setProperty('--text-primary','#000');document.documentElement.style.setProperty('--text-secondary','#666');document.documentElement.style.setProperty('--border','#e0e0e0');document.documentElement.style.setProperty('--accent','#000');document.documentElement.style.setProperty('--accent-hover','#333');}}
 dt();window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',dt);
