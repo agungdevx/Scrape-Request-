@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Scrape Request</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><style>
-:root{--bg-primary:#000;--bg-secondary:#111;--bg-tertiary:#1a1a1a;--text-primary:#fff;--text-secondary:#888;--border:#333;--accent:#fff;--accent-hover:#f0f0f0;--error:#f44;--success:#0c6}
+:root{--bg-primary:#000;--bg-secondary:#111;--bg-tertiary:#1a1a1a;--text-primary:#fff;--text-secondary:#888;--border:#333;--accent:#fff;--accent-hover:#f0f0f0;--error:#f44;--success:#0c6;--info:#3b82f6}
 *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Open Sans','Helvetica Neue',sans-serif}
 body{background-color:var(--bg-primary);color:var(--text-primary);line-height:1.6;min-height:100vh;display:flex;flex-direction:column;padding:1rem}
 .container{max-width:640px;width:100%;margin:0 auto;padding:2rem 1rem}
@@ -35,17 +35,35 @@ textarea.form-input{resize:vertical;min-height:120px}
 .submit-btn:disabled{background:var(--border);color:var(--text-secondary);cursor:not-allowed}
 .loading-spinner{display:none;width:20px;height:20px;border:3px solid rgba(0,0,0,.3);border-radius:50%;border-top-color:var(--bg-primary);animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.message{padding:1.25rem;border-radius:8px;margin-bottom:1.5rem;display:none;border:1px solid transparent}
-.message.success{background:rgba(0,204,102,.1);border-color:var(--success);color:var(--success);display:block}
-.message.error{background:rgba(255,68,68,.1);border-color:var(--error);color:var(--error);display:block}
 .footer{text-align:center;margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border);color:var(--text-secondary);font-size:.875rem}
 .requirements{font-size:.85rem;color:var(--text-secondary);margin-top:.5rem;display:flex;align-items:center;gap:.5rem}
 .requirements i{color:var(--text-secondary)}
-@media(max-width:640px){.container{padding:1rem .5rem}.form-container{padding:1.5rem}.captcha-input-box{width:48px;height:48px;font-size:1.5rem}.captcha-text{font-size:1.5rem;letter-spacing:6px}}
-@media(prefers-color-scheme:light){:root{--bg-primary:#fff;--bg-secondary:#f9f9f9;--bg-tertiary:#f0f0f0;--text-primary:#000;--text-secondary:#666;--border:#e0e0e0;--accent:#000;--accent-hover:#333}.captcha-input-box{background:var(--bg-primary)}.loading-spinner{border-top-color:var(--bg-primary);border-color:rgba(255,255,255,.3)}}
+/* TOAST NOTIFICATION SYSTEM */
+.toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:12px;max-width:400px}
+.toast{background:var(--bg-secondary);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:0 10px 25px rgba(0,0,0,.3);display:flex;align-items:flex-start;gap:12px;transform:translateX(120%);transition:transform .3s cubic-bezier(0.68, -0.55, 0.265, 1.55);position:relative;overflow:hidden}
+.toast.show{transform:translateX(0)}
+.toast-icon{width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0}
+.toast.success .toast-icon{background:rgba(16,185,129,.15);color:var(--success)}
+.toast.error .toast-icon{background:rgba(239,68,68,.15);color:var(--error)}
+.toast.info .toast-icon{background:rgba(59,130,246,.15);color:var(--info)}
+.toast-content{flex:1}
+.toast-title{font-weight:600;font-size:.95rem;margin-bottom:4px}
+.toast-message{font-size:.875rem;color:var(--text-secondary);line-height:1.4}
+.toast-close{background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:4px;margin-left:4px;transition:color .2s;flex-shrink:0}
+.toast-close:hover{color:var(--text-primary)}
+.toast-progress{position:absolute;bottom:0;left:0;height:3px;background:var(--success);width:100%;transform:scaleX(1);transform-origin:left;animation:progress 5s linear forwards}
+.toast.success .toast-progress{background:var(--success)}
+.toast.error .toast-progress{background:var(--error)}
+.toast.info .toast-progress{background:var(--info)}
+@keyframes progress{to{transform:scaleX(0)}}
+@media(max-width:640px){.container{padding:1rem .5rem}.form-container{padding:1.5rem}.captcha-input-box{width:48px;height:48px;font-size:1.5rem}.captcha-text{font-size:1.5rem;letter-spacing:6px}.toast-container{max-width:calc(100vw - 40px)}}
+@media(prefers-color-scheme:light){:root{--bg-primary:#fff;--bg-secondary:#f9f9f9;--bg-tertiary:#f0f0f0;--text-primary:#000;--text-secondary:#666;--border:#e0e0e0;--accent:#000;--accent-hover:#333;--info:#1d4ed8}.toast{box-shadow:0 5px 15px rgba(0,0,0,.1)}.captcha-input-box{background:var(--bg-primary)}.loading-spinner{border-top-color:var(--bg-primary);border-color:rgba(255,255,255,.3)}}
 </style></head><body>
+<!-- Toast Notifications Container -->
+<div class="toast-container" id="toastContainer"></div>
+
 <div class="container"><header class="header"><div class="logo"><div class="logo-icon">SR</div><div class="logo-text">Scrape Request</div></div><p class="subtitle">Submit web scraping requests securely</p></header>
-<div id="message" class="message"></div>
+
 <div class="form-container"><form id="scrapeForm"><div class="form-group"><label class="form-label" for="name">Full Name</label><input type="text" id="name" class="form-input" placeholder="Enter your full name" required></div>
 <div class="form-group"><label class="form-label" for="url">Website URL</label><input type="url" id="url" class="form-input" placeholder="https://example.com" pattern="^https://.*" required><p class="requirements"><i class="fas fa-info-circle"></i>Must start with https://</p></div>
 <div class="form-group"><label class="form-label" for="description">Description</label><textarea id="description" class="form-input" rows="4" placeholder="Describe what data you want to scrape" required></textarea></div>
@@ -59,7 +77,12 @@ textarea.form-input{resize:vertical;min-height:120px}
 (async function(){
 let currentCaptcha='';
 const captchaInputs=document.querySelectorAll('.captcha-input-box');const captchaText=document.getElementById('captchaText');
-async function loadCaptcha(){try{const response=await fetch('/api/captcha');if(response.ok){const data=await response.json();currentCaptcha=data.captcha;captchaText.textContent=currentCaptcha;clearCaptchaInputs();}else{captchaText.textContent='Error';}}catch(error){captchaText.textContent='Error';console.error('Failed to load CAPTCHA:',error);}}
+const toastContainer=document.getElementById('toastContainer');
+function showToast(title,message,type='info',duration=5000){const toastId='toast-'+Date.now()+Math.random().toString(36).substr(2,9);const toast=document.createElement('div');toast.className=`toast ${type}`;toast.id=toastId;
+let icon='ℹ️';if(type==='success')icon='✓';else if(type==='error')icon='✕';
+toast.innerHTML=`<div class="toast-icon">${icon}</div><div class="toast-content"><div class="toast-title">${title}</div><div class="toast-message">${message}</div></div><button class="toast-close" onclick="document.getElementById('${toastId}').remove()">×</button><div class="toast-progress"></div>`;
+toastContainer.appendChild(toast);setTimeout(()=>toast.classList.add('show'),10);if(duration>0){setTimeout(()=>{toast.classList.remove('show');setTimeout(()=>{if(toast.parentNode)toast.parentNode.removeChild(toast);},300);},duration);}return toastId;}
+async function loadCaptcha(){try{const response=await fetch('/api/captcha');if(response.ok){const data=await response.json();currentCaptcha=data.captcha;captchaText.textContent=currentCaptcha;clearCaptchaInputs();showToast('CAPTCHA Loaded','New verification code generated','info',3000);}else{captchaText.textContent='Error';showToast('Error','Failed to load CAPTCHA','error');}}catch(error){captchaText.textContent='Error';console.error('Failed to load CAPTCHA:',error);showToast('Network Error','Check your connection','error');}}
 function clearCaptchaInputs(){captchaInputs.forEach(input=>{input.value='';input.classList.remove('filled');});if(captchaInputs[0])captchaInputs[0].focus();}
 await loadCaptcha();
 document.getElementById('refreshCaptcha').addEventListener('click',loadCaptcha);
@@ -67,18 +90,19 @@ captchaInputs.forEach((input,index)=>{input.addEventListener('input',function(e)
 input.addEventListener('keydown',function(e){if(e.key==='Backspace'&&!e.target.value&&index>0){captchaInputs[index-1].focus();}});
 input.addEventListener('paste',function(e){e.preventDefault();const pasted=e.clipboardData.getData('text').trim();if(pasted.length===4){for(let i=0;i<4;i++){if(i<pasted.length){captchaInputs[i].value=pasted[i];captchaInputs[i].classList.add('filled');}}captchaInputs[3].focus();}});});
 function getCaptchaValue(){let value='';captchaInputs.forEach(input=>{value+=input.value;});return value;}
-function showMessage(text,type){const messageDiv=document.getElementById('message');messageDiv.textContent=text;messageDiv.className=`message ${type}`;messageDiv.style.display='block';setTimeout(()=>{messageDiv.style.display='none';},5000);}
 document.getElementById('scrapeForm').addEventListener('submit',async function(e){e.preventDefault();const name=document.getElementById('name').value.trim();const url=document.getElementById('url').value.trim();const description=document.getElementById('description').value.trim();const captchaValue=getCaptchaValue();
-if(!name||!url||!description){showMessage('Please fill all required fields.','error');return;}
-if(!url.startsWith('https://')){showMessage('URL must start with https://','error');return;}
-if(captchaValue.length!==4){showMessage('Enter all 4 verification characters.','error');return;}
+if(!name||!url||!description){showToast('Validation Error','Please fill all required fields','error');return;}
+if(!url.startsWith('https://')){showToast('Validation Error','URL must start with https://','error');return;}
+if(captchaValue.length!==4){showToast('Validation Error','Enter all 4 verification characters','error');return;}
 const submitBtn=document.getElementById('submitBtn');const btnText=document.getElementById('btnText');const loadingSpinner=document.getElementById('loadingSpinner');
 submitBtn.disabled=true;btnText.textContent='Sending...';loadingSpinner.style.display='block';
+const sendingToast=showToast('Sending Request','Processing your submission...','info',0);
 try{const response=await fetch('/api/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,url:url,description:description,captcha:captchaValue})});
-const result=await response.json();if(response.ok){document.getElementById('scrapeForm').reset();await loadCaptcha();showMessage('Request submitted successfully.','success');}else{showMessage(result.error||'Submission failed.','error');await loadCaptcha();}}catch(error){showMessage('Network error. Please try again.','error');await loadCaptcha();}finally{submitBtn.disabled=false;btnText.textContent='Submit Request';loadingSpinner.style.display='none';}});
+const result=await response.json();const sendingToastEl=document.getElementById(sendingToast);if(sendingToastEl)sendingToastEl.remove();
+if(response.ok){document.getElementById('scrapeForm').reset();await loadCaptcha();showToast('Success!','Request submitted successfully','success');}else{showToast('Submission Failed',result.error||'Please try again','error');await loadCaptcha();}}catch(error){const sendingToastEl=document.getElementById(sendingToast);if(sendingToastEl)sendingToastEl.remove();showToast('Network Error','Please check your connection','error');await loadCaptcha();}finally{submitBtn.disabled=false;btnText.textContent='Submit Request';loadingSpinner.style.display='none';}});
 setInterval(loadCaptcha,180000);
-document.addEventListener('DOMContentLoaded',()=>{document.getElementById('name').focus();});
-function detectTheme(){const isDark=window.matchMedia('(prefers-color-scheme: dark)').matches;if(!isDark){document.documentElement.style.setProperty('--bg-primary','#fff');document.documentElement.style.setProperty('--bg-secondary','#f9f9f9');document.documentElement.style.setProperty('--bg-tertiary','#f0f0f0');document.documentElement.style.setProperty('--text-primary','#000');document.documentElement.style.setProperty('--text-secondary','#666');document.documentElement.style.setProperty('--border','#e0e0e0');document.documentElement.style.setProperty('--accent','#000');document.documentElement.style.setProperty('--accent-hover','#333');}}
+document.addEventListener('DOMContentLoaded',()=>{document.getElementById('name').focus();showToast('Welcome','Submit your scraping request securely','info',4000);});
+function detectTheme(){const isDark=window.matchMedia('(prefers-color-scheme: dark)').matches;if(!isDark){document.documentElement.style.setProperty('--bg-primary','#fff');document.documentElement.style.setProperty('--bg-secondary','#f9f9f9');document.documentElement.style.setProperty('--bg-tertiary','#f0f0f0');document.documentElement.style.setProperty('--text-primary','#000');document.documentElement.style.setProperty('--text-secondary','#666');document.documentElement.style.setProperty('--border','#e0e0e0');document.documentElement.style.setProperty('--accent','#000');document.documentElement.style.setProperty('--accent-hover','#333');document.documentElement.style.setProperty('--info','#1d4ed8');}}
 detectTheme();window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',detectTheme);
 })();
 </script>
