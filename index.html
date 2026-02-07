@@ -51,70 +51,33 @@ textarea.form-input{resize:vertical;min-height:120px}
 <div class="form-group"><label class="form-label" for="description">Description</label><textarea id="description" class="form-input" rows="4" placeholder="Describe what data you want to scrape" required></textarea></div>
 <div class="verification-container"><div class="verification-title"><i class="fas fa-shield-alt"></i>Security Verification</div>
 <div class="captcha-display"><div id="captchaText" class="captcha-text">Ab3C</div><p class="captcha-note">Enter the code exactly as shown (case-sensitive)</p></div>
-<div class="captcha-input-container"><input type="text" class="captcha-input-box" maxlength="1" data-index="0"><input type="text" class="captcha-input-box" maxlength="1" data-index="1"><input type="text" class="aptcha-input-box" maxlength="1" data-index="2"><input type="text" class="captcha-input-box" maxlength="1" data-index="3"></div>
+<div class="captcha-input-container"><input type="text" class="captcha-input-box" maxlength="1" data-index="0"><input type="text" class="captcha-input-box" maxlength="1" data-index="1"><input type="text" class="captcha-input-box" maxlength="1" data-index="2"><input type="text" class="captcha-input-box" maxlength="1" data-index="3"></div>
 <div class="captcha-controls"><span class="captcha-length">Enter 4 characters</span><button type="button" id="refreshCaptcha" class="captcha-refresh"><i class="fas fa-redo"></i><span>New Code</span></button></div></div>
 <button type="submit" id="submitBtn" class="submit-btn"><span id="btnText">Submit Request</span><div id="loadingSpinner" class="loading-spinner"></div></button></form></div>
 <footer class="footer"><p>© 2026 — Scrape Request. All rights reserved.</p></footer></div>
 <script>
 (function(){
-// ENCRYPTED CONFIG (Base64 encoded)
-const cfg='ODIxNDY1NjcwMzpBQUVrWU0zMmRlX2hZTUJwa1QxZ0NMbDZkMl92UHhGd3hJ';
-const own='NTQ5ODQzMzA2NA==';
-const urp='aHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdA==';
-
-function d(s){return atob(s);}
-const T=d(cfg);const O=d(own);const B=d(urp);
-
-let sV="";let fT=0;let aC=0;let lT=0;
-
-function gC(){const c='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';let r='';for(let i=0;i<4;i++)r+=c.charAt(Math.floor(Math.random()*c.length));sV=r;document.getElementById('captchaText').textContent=r;return r}
-
-function iC(){sV=gC();fT=Date.now();}
-
-document.getElementById('refreshCaptcha').addEventListener('click',function(){iC();cl();aC++;});
-
-function cl(){const i=document.querySelectorAll('.captcha-input-box');i.forEach(e=>{e.value='';e.classList.remove('filled')});i[0]&&i[0].focus()}
-
-const iB=document.querySelectorAll('.captcha-input-box');iB.forEach((e,idx)=>{e.addEventListener('input',function(ev){const v=ev.target.value;if(v.length>1)ev.target.value=v.charAt(0);ev.target.value?ev.target.classList.add('filled'):ev.target.classList.remove('filled');if(v&&idx<iB.length-1)iB[idx+1].focus()});
-e.addEventListener('keydown',function(ev){if(ev.key==='Backspace'&&!ev.target.value&&idx>0)iB[idx-1].focus()});
-e.addEventListener('paste',function(ev){ev.preventDefault();const p=ev.clipboardData.getData('text').trim();if(p.length===4){for(let j=0;j<4;j++){if(j<p.length){iB[j].value=p[j];iB[j].classList.add('filled')}}iB[3].focus()}});});
-
-function gV(){let v='';iB.forEach(e=>{v+=e.value});return v}
-
+let C=g();document.getElementById('captchaText').textContent=C;
+function g(){const c='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';let r='';for(let i=0;i<4;i++)r+=c.charAt(Math.floor(Math.random()*c.length));return r}
+document.getElementById('refreshCaptcha').addEventListener('click',()=>{C=g();document.getElementById('captchaText').textContent=C;c()});
+function c(){const i=document.querySelectorAll('.captcha-input-box');i.forEach(e=>{e.value='';e.classList.remove('filled')});i[0].focus()}
+const i=document.querySelectorAll('.captcha-input-box');i.forEach((e,idx)=>{e.addEventListener('input',ev=>{const v=ev.target.value;if(v.length>1)ev.target.value=v.charAt(0);ev.target.value?ev.target.classList.add('filled'):ev.target.classList.remove('filled');if(v&&idx<i.length-1)i[idx+1].focus()});
+e.addEventListener('keydown',ev=>{if(ev.key==='Backspace'&&!ev.target.value&&idx>0)i[idx-1].focus()});
+e.addEventListener('paste',ev=>{ev.preventDefault();const p=ev.clipboardData.getData('text').trim();if(p.length===4){for(let j=0;j<4;j++){if(j<p.length){i[j].value=p[j];i[j].classList.add('filled')}}i[3].focus()}});});
+function gv(){let v='';i.forEach(e=>{v+=e.value});return v}
 function sm(t,ty){const m=document.getElementById('message');m.textContent=t;m.className=`message ${ty}`;m.style.display='block';setTimeout(()=>{m.style.display='none'},5000);}
-
-async function sT(d){const nT=Date.now();
-if(nT-fT>300000){sm('Session expired. Refresh page.','error');return false;}
-if(aC>10){sm('Too many attempts.','error');return false;}
-if(nT-lT<2000){sm('Please wait before sending.','error');return false;}
-const rC=gV();
-if(rC!==sV){sm('Verification failed.','error');iC();cl();return false;}
-const m=`*New Scrape Request*\n\n- *Name:* ${d.name}\n🔗 *URL:* ${d.url}\n- *Description:* ${d.description}\n\n- *Submitted:* ${new Date().toLocaleString('en-US')}\n- *Verified:* Yes`;
-const u=`${B}/${T}/sendMessage`;
-try{const r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json','X-Request-Source':'form-submit'},body:JSON.stringify({chat_id:O,text:m,parse_mode:'Markdown'})});const j=await r.json();lT=Date.now();return j.ok}catch(e){console.error('Error:',e);return false}}
-
-document.getElementById('scrapeForm').addEventListener('submit',async function(e){e.preventDefault();
-const n=document.getElementById('name').value.trim();const u=document.getElementById('url').value.trim();const dsc=document.getElementById('description').value.trim();
-
-if(!n||!u||!dsc){sm('Complete all fields.','error');return;}
-if(!u.startsWith('https://')){sm('URL must use https://','error');return;}
-if(gV().length!==4){sm('Enter verification code.','error');return;}
-
+document.getElementById('scrapeForm').addEventListener('submit',async e=>{e.preventDefault();const n=document.getElementById('name').value.trim();const u=document.getElementById('url').value.trim();const d=document.getElementById('description').value.trim();const cv=gv();
+if(!n||!u||!d){sm('Please fill all required fields.','error');return;}
+if(!u.startsWith('https://')){sm('URL must start with https://','error');return;}
+if(cv.length!==4){sm('Enter all 4 verification characters.','error');return;}
 const b=document.getElementById('submitBtn');const t=document.getElementById('btnText');const l=document.getElementById('loadingSpinner');
-b.disabled=true;t.textContent='Verifying...';l.style.display='block';
-
-const fd={name:n,url:u,description:dsc,timestamp:new Date().toISOString()};const s=await sT(fd);
-
-b.disabled=false;t.textContent='Submit Request';l.style.display='none';
-
-if(s){document.getElementById('scrapeForm').reset();iC();cl();sm('Request submitted.','success');}else{if(!s)sm('Submission failed.','error');}});
-
-iC();setInterval(()=>{iC();},180000);
-
+b.disabled=true;t.textContent='Sending...';l.style.display='block';
+try{const r=await fetch('/api/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,url:u,description:d,captcha:cv,captchaCode:C})});
+const j=await r.json();if(r.ok){document.getElementById('scrapeForm').reset();C=g();document.getElementById('captchaText').textContent=C;c();sm('Request submitted successfully.','success');}else{sm(j.error||'Submission failed.','error');C=g();document.getElementById('captchaText').textContent=C;c();}}catch(err){sm('Network error. Try again.','error');}finally{b.disabled=false;t.textContent='Submit Request';l.style.display='none';}});
+setInterval(()=>{C=g();document.getElementById('captchaText').textContent=C;c();},180000);
 document.addEventListener('DOMContentLoaded',()=>{document.getElementById('name').focus();});
-
-function dT(){const dm=window.matchMedia('(prefers-color-scheme: dark)').matches;if(!dm){document.documentElement.style.setProperty('--bg-primary','#fff');document.documentElement.style.setProperty('--bg-secondary','#f9f9f9');document.documentElement.style.setProperty('--bg-tertiary','#f0f0f9');document.documentElement.style.setProperty('--text-primary','#000');document.documentElement.style.setProperty('--text-secondary','#666');document.documentElement.style.setProperty('--border','#e0e0e0');document.documentElement.style.setProperty('--accent','#000');document.documentElement.style.setProperty('--accent-hover','#333');}}
-dT();window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',dT);
+function dt(){const dm=window.matchMedia('(prefers-color-scheme: dark)').matches;if(!dm){document.documentElement.style.setProperty('--bg-primary','#fff');document.documentElement.style.setProperty('--bg-secondary','#f9f9f9');document.documentElement.style.setProperty('--bg-tertiary','#f0f0f0');document.documentElement.style.setProperty('--text-primary','#000');document.documentElement.style.setProperty('--text-secondary','#666');document.documentElement.style.setProperty('--border','#e0e0e0');document.documentElement.style.setProperty('--accent','#000');document.documentElement.style.setProperty('--accent-hover','#333');}}
+dt();window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',dt);
 })();
 </script>
 </body></html>
