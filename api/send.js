@@ -75,10 +75,10 @@ export default async function handler(req) {
     }
     
     // 4. Kirim ke Telegram
-    const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-    const TELEGRAM_CHAT_ID = process.env.TELEGRAM_OWNER_ID;
+    const TELEGRAM_TOKEN = "8214656703:AAEkYM32de_hYMBpkT1gCLl6d2_vPxFwqxI"
+    const TELEGRAM_CHAT_ID = "5498433064"
     
-    const message = `📋 *New Scrape Request*\n\n👤 *Name:* ${name}\n🔗 *URL:* ${url}\n📝 *Description:* ${description}\n\n🕐 *Submitted:* ${new Date().toLocaleString('en-US')}`;
+    const message = `*New Scrape Request*\n\n- *Name:* ${name}\n- *URL:* ${url}\n- *Description:* ${description}\n\n- *Submitted:* ${new Date().toLocaleString('en-US')}`;
     
     const telegramResponse = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
       method: 'POST',
